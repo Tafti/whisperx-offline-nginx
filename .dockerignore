@@ -1,0 +1,76 @@
+# Git
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments (should not be in Docker context)
+env/
+venv/
+whisperx-env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project documentation
+README.md
+LICENSE
+*.md
+
+# Logs and temp files
+*.log
+*.pid
+tmp/
+temp/
+*.tmp
+
+# Environment variables (should be provided via docker-compose)
+.env
+.env.local
+.env.*.local
+
+# Model cache - we want to use a volume instead of bundling in image
+data/models/
+!data/models/.gitkeep
+
+# Docker files (avoid recursive include)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+
+# Scripts used only for development
+download_model.py
+setup_model.py
+test_model.py
+diagnose_model.py
+
+# Large binary files
+*.bin
+*.pt
+*.pth
+*.safetensors
+*.mp3
+*.wav
+*.m4a
+*.flac

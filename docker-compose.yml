@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  whisperx-api:
+    build: .
+    container_name: whisperx-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount model cache to persist downloaded models
+      - ./data/models:/app/data/models
+      # Optional: mount code for live development (remove in production)
+      - ./:/app
+    environment:
+      - HF_HOME=/app/data/models
+      - TRANSFORMERS_CACHE=/app/data/models/transformers
+      - HF_HUB_OFFLINE=0          # Allow download on first run
+      # Uncomment for GPU support (requires nvidia-docker)
+      # - NVIDIA_VISIBLE_DEVICES=all
+    restart: unless-stopped
+    # Uncomment for GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
