@@ -19,10 +19,9 @@ app = FastAPI(title="WhisperX API", description="Local transcription server with
 @app.on_event("startup")
 def load_models():
     global whisper_model, align_model, align_metadata
-
     # ! change model here
-    # TODO: maybe add to api
-    model_name = "large"
+    # TODO: maybe add to /transcribe parameters
+    model_name = "large-v2"
     logger.info(f"Loading Whisper ASR model: {model_name}")
     whisper_model = safe_load_model(model_name, device, compute_type)
     logger.info("ASR model loaded successfully")
