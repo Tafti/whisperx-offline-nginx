@@ -20,7 +20,9 @@ app = FastAPI(title="WhisperX API", description="Local transcription server with
 def load_models():
     global whisper_model, align_model, align_metadata
 
-    model_name = "base"
+    # ! change model here
+    # TODO: maybe add to api
+    model_name = "large"
     logger.info(f"Loading Whisper ASR model: {model_name}")
     whisper_model = safe_load_model(model_name, device, compute_type)
     logger.info("ASR model loaded successfully")
@@ -29,7 +31,7 @@ def load_models():
     try:
         logger.info("Loading alignment model...")
         os.environ["HF_HUB_OFFLINE"] = "1"
-        align_model, align_meta     data = whisperx.load_align_model(
+        align_model, align_metadata = whisperx.load_align_model(
             language_code="en", 
             device=device,
             model_cache_only=True 
@@ -50,8 +52,8 @@ async def transcribe_audio(
     temperature: float = 0.0
 ):
     """Transcribe an audio file using faster-whisper."""
-    if not file.filename.lower().endswith((".wav", ".mp3", ".m4a", ".flac")):
-        raise HTTPException(400, "Unsupported file format. Use .wav, .mp3, .m4a, or .flac")
+    if not file.filename.lower().endswith((".wav", ".mp3", ".m4a", ".flac", ".ogg")):
+        raise HTTPException(400, "Unsupported file format. Use .wav, .mp3, .m4a, .ogg, or .flac")
 
     # Save uploaded file temporarily
     import tempfile
