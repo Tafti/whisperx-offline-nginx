@@ -152,6 +152,34 @@ align_model, align_metadata = whisperx.load_align_model(
 docker compose up --build
 ```
 
+### Scale with Nginx + 2 API containers
+
+This repository is configured to run two WhisperX API containers behind Nginx:
+
+- `whisperx-api-1` (internal port `8000`)
+- `whisperx-api-2` (internal port `8000`)
+- `nginx` (public entrypoint on `localhost:8000`)
+
+Start the stack:
+
+```bash
+docker compose up -d --build
+```
+
+Check running services:
+
+```bash
+docker compose ps
+```
+
+Hit the API through Nginx:
+
+```bash
+curl http://localhost:8000/health
+```
+
+You can tune per-container concurrency via `MAX_CONCURRENT_TRANSCRIPTIONS` in `docker-compose.yml`.
+
 ### Stop and remove
 
 ```bash

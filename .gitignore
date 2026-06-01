@@ -27,7 +27,7 @@ dmypy.json
 .DS_Store
 
 # Project specific
-data/models/
+data/
 *.log
 *.pid
 *.seed

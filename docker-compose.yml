@@ -1,28 +1,44 @@
-version: '3.8'
-
 services:
-  whisperx-api:
+  whisperx-api-1:
     build: .
-    container_name: whisperx-api
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
-      # Mount model cache to persist downloaded models
       - ./data/models:/app/data/models
-      # Optional: mount code for live development (remove in production)
       - ./:/app
     environment:
       - HF_HOME=/app/data/models
-      - TRANSFORMERS_CACHE=/app/data/models/transformers
-      - HF_HUB_OFFLINE=0          # Allow download on first run
-      # Uncomment for GPU support (requires nvidia-docker)
-      # - NVIDIA_VISIBLE_DEVICES=all
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
+      - HF_DATASETS_OFFLINE=1
+      - TORCH_HOME=/app/data/models/torch
+      - MAX_CONCURRENT_TRANSCRIPTIONS=2
     restart: unless-stopped
-    # Uncomment for GPU support
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
+
+  whisperx-api-2:
+    build: .
+    expose:
+      - "8000"
+    volumes:
+      - ./data/models:/app/data/models
+      - ./:/app
+    environment:
+      - HF_HOME=/app/data/models
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
+      - HF_DATASETS_OFFLINE=1
+      - TORCH_HOME=/app/data/models/torch
+      - MAX_CONCURRENT_TRANSCRIPTIONS=2
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: whisperx-nginx
+    depends_on:
+      - whisperx-api-1
+      - whisperx-api-2
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped

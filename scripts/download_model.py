@@ -95,7 +95,7 @@ def download_with_progress(model_name, max_retries=3):
 
 def download_specific_file_with_progress():
     """Alternative: Download a specific file with detailed progress"""
-    model_name = "guillaumekln/faster-whisper-large-v2"
+    model_name = "guillaumekln/faster-whisper-large-v3"
     filename = "model.bin"
     
     print(f"\n📥 Downloading {filename} from {model_name}...")
@@ -207,7 +207,7 @@ def download_with_tqdm_workaround():
     """
     import subprocess
     
-    model_name = "guillaumekln/faster-whisper-large-v2"
+    model_name = "guillaumekln/faster-whisper-large-v3"
     print(f"\n📥 Downloading {model_name} with external tool...")
     
     # Use huggingface-cli with tqdm
