@@ -166,6 +166,8 @@ Start the stack:
 docker compose up -d --build
 ```
 
+The API containers use a persistent named Docker volume for `/app/data/models`, so the model cache survives container recreation without baking the cache into the image.
+
 Check running services:
 
 ```bash
@@ -188,7 +190,7 @@ docker compose down
 
 ### Persist models
 
-Models are stored in `./data/models` on your host. This volume is mounted into the container, so models survive container recreation.
+Models are stored in the `whisperx-model-cache` Docker volume and mounted at `/app/data/models`. If you want host-visible storage instead, change the service volume mapping in `docker-compose.yml` to a bind mount such as `./data/models:/app/data/models`.
 
 ### GPU support (optional)
 

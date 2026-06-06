@@ -1,13 +1,14 @@
 services:
   whisperx-api-1:
-    image: whisper-offline-image
-    pull_policy: never
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: whisper-offline-image:separated-model
     gpus: all
     expose:
       - "8000"
     volumes:
-      - ./data/models:/app/data/models
-      - ./:/app
+      - whisperx-model-cache:/app/data/models
     environment:
       - HF_HOME=/app/data/models
       - HF_HUB_OFFLINE=1
@@ -20,14 +21,15 @@ services:
     restart: unless-stopped
 
   whisperx-api-2:
-    image: whisper-offline-image
-    pull_policy: never
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: whisper-offline-image:separated-model
     gpus: all
     expose:
       - "8000"
     volumes:
-      - ./data/models:/app/data/models
-      - ./:/app
+      - whisperx-model-cache:/app/data/models
     environment:
       - HF_HOME=/app/data/models
       - HF_HUB_OFFLINE=1
@@ -50,3 +52,6 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     restart: unless-stopped
+
+volumes:
+  whisperx-model-cache:

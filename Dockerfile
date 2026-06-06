@@ -5,29 +5,13 @@ ENV PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
     HF_HOME=/app/data/models \
     TRANSFORMERS_CACHE=/app/data/models/transformers \
-    HF_HUB_OFFLINE=1 \
-    PIP_INDEX_URL=https://pypi.org/simple \
-    PIP_TRUSTED_HOST=package-mirror.liara.ir
+    HF_HUB_OFFLINE=0
 
 # =========================
 # REMOVE BROKEN NVIDIA APT REPO
 # =========================
 RUN rm -f /etc/apt/sources.list.d/cuda*.list && \
     rm -f /etc/apt/sources.list.d/nvidia*.list || true
-
-# =========================
-# ARVANCLOUD MIRROR
-# =========================
-RUN printf "deb http://archive.ubuntu.com/ubuntu jammy main restricted universe multiverse\n\
-deb http://archive.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse\n\
-deb http://archive.ubuntu.com/ubuntu jammy-backports main restricted universe multiverse\n\
-deb http://security.ubuntu.com/ubuntu jammy-security main restricted universe multiverse\n" \
-> /etc/apt/sources.list\
-printf "deb http://mirror.arvancloud.ir/ubuntu jammy main restricted universe multiverse\n\
-deb http://mirror.arvancloud.ir/ubuntu jammy-updates main restricted universe multiverse\n\
-deb http://mirror.arvancloud.ir/ubuntu jammy-backports main restricted universe multiverse\n\
-deb http://mirror.arvancloud.ir/ubuntu jammy-security main restricted universe multiverse\n" \
-> /etc/apt/sources.list
 
 # =========================
 # SYSTEM PACKAGES
@@ -56,18 +40,19 @@ RUN pip install --upgrade pip setuptools wheel
 # =========================
 # TORCH
 # =========================
-RUN for i in $(seq 1 10); do \
-      pip install --timeout 300 \
-        --extra-index-url https://download.pytorch.org/whl/cu124 \
-        torch torchaudio torchvision && break; \
-      sleep 15; \
-    done
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --timeout 30 \
+      --extra-index-url https://download.pytorch.org/whl/cu124 \
+      torch torchaudio torchvision
 
-# =========================
 # APP REQUIREMENTS
 # =========================
-RUN grep -vE '^(torch|torchaudio|torchvision)$' requirements.txt > requirements.runtime.txt && \
-    pip install --timeout 180 -r requirements.runtime.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    grep -vE '^(torch|torchaudio|torchvision)$' requirements.txt > requirements.runtime.txt && \
+    pip install --timeout 30 -r requirements.runtime.txt
+
+# Ensure ASGI server binary/module is present at runtime.
+RUN python -c "import fastapi, uvicorn"
 
 COPY . .
 
@@ -75,4 +60,4 @@ RUN mkdir -p /app/data/models
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
