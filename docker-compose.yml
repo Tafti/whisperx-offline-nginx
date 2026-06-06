@@ -1,6 +1,8 @@
 services:
   whisperx-api-1:
-    build: .
+    image: whisper-offline-image
+    pull_policy: never
+    gpus: all
     expose:
       - "8000"
     volumes:
@@ -12,11 +14,15 @@ services:
       - TRANSFORMERS_OFFLINE=1
       - HF_DATASETS_OFFLINE=1
       - TORCH_HOME=/app/data/models/torch
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       - MAX_CONCURRENT_TRANSCRIPTIONS=2
     restart: unless-stopped
 
   whisperx-api-2:
-    build: .
+    image: whisper-offline-image
+    pull_policy: never
+    gpus: all
     expose:
       - "8000"
     volumes:
@@ -28,6 +34,8 @@ services:
       - TRANSFORMERS_OFFLINE=1
       - HF_DATASETS_OFFLINE=1
       - TORCH_HOME=/app/data/models/torch
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       - MAX_CONCURRENT_TRANSCRIPTIONS=2
     restart: unless-stopped
 
