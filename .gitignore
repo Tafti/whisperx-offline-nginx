@@ -27,9 +27,10 @@ dmypy.json
 .DS_Store
 
 # Project specific
-data/**
-!data/
-!data/.gitkeep
+data/
+local-media-samples/
+
+
 *.log
 *.pid
 *.seed
