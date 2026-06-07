@@ -27,11 +27,19 @@ dmypy.json
 .DS_Store
 
 # Project specific
-data/
+data/**
+!data/
+!data/.gitkeep
 *.log
 *.pid
 *.seed
 *.pid.lock
+*.out
+
+# Local deployment/runtime files
+docker-data/
+uploads/
+downloads/
 
 # Environment variables
 .env

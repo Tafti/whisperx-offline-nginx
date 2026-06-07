@@ -146,6 +146,48 @@ align_model, align_metadata = whisperx.load_align_model(
 
 ## 🐳 Docker Details
 
+### Production deployment (recommended)
+
+Use the dedicated production compose file to run prebuilt images only (no source build on server).
+
+1. Copy environment template:
+
+```bash
+cp .env.production.example .env.production
+```
+
+2. Set your pushed image tag in `.env.production`:
+
+```bash
+WHISPERX_IMAGE=docker.io/taftiz/whisper-offline-image:separated-model
+```
+
+3. Download required models into the production Docker volume:
+
+```bash
+docker volume create whisperx-offline_whisperx-model-cache
+docker run --rm -it \
+  -v whisperx-offline_whisperx-model-cache:/models \
+  -v "$PWD:/src" \
+  python:3.11-slim \
+  sh -lc "pip install --no-cache-dir huggingface_hub tqdm && python /src/scripts/download_model.py --cache-dir /models"
+```
+
+4. Start stack:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.production.yml up -d
+```
+
+5. Verify health:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.production.yml ps
+curl http://localhost:8000/health
+```
+
+This production flow keeps model files outside image layers and survives container recreation.
+
 ### Build and run
 
 ```bash
@@ -204,7 +246,7 @@ Uncomment the `deploy` section in `docker-compose.yml` and use the GPU‑enabled
 2. **Alignment** (optional) – wav2vec 2.0 model refines word boundaries.
 3. **FastAPI** – Exposes endpoints, handles file uploads, and streams JSON responses.
 
-Model download occurs automatically on first run. If interrupted, the `safe_load_model` helper deletes the corrupted snapshot and retries.
+Models are expected to be pre-downloaded into `/app/data/models` (for offline mode). Use `scripts/download_model.py` before starting containers in production.
 
 ---
 

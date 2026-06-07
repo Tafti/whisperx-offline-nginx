@@ -3,6 +3,7 @@ import os
 import asyncio
 import threading
 import zipfile
+from pathlib import Path
 from typing import Optional, Tuple
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
@@ -25,8 +26,6 @@ ALIGN_MODEL_PATHS = {
             MODEL_CACHE_ROOT
             / "hub"
             / "models--jonatasgrosman--wav2vec2-large-xlsr-53-persian"
-            / "snapshots"
-            / "main"
         ),
     )
 }
@@ -164,8 +163,35 @@ def _patch_alignment_sentence_splitter() -> None:
 
 def _resolve_align_model_name(language_code: str) -> Optional[str]:
     configured = ALIGN_MODEL_PATHS.get(language_code)
-    if configured and os.path.exists(configured):
-        return configured
+    if not configured:
+        return None
+
+    configured_path = Path(configured)
+    if not configured_path.exists():
+        return None
+
+    # If the path already points to a snapshot directory, use it directly.
+    if (configured_path / "model.safetensors").exists() or (configured_path / "pytorch_model.bin").exists():
+        return str(configured_path)
+
+    # Hugging Face cache layout: models--.../refs/main -> snapshots/<commit_hash>
+    refs_main = configured_path / "refs" / "main"
+    snapshots_dir = configured_path / "snapshots"
+    if refs_main.exists() and snapshots_dir.exists():
+        try:
+            revision = refs_main.read_text(encoding="utf-8").strip()
+            snapshot_dir = snapshots_dir / revision
+            if snapshot_dir.exists():
+                return str(snapshot_dir)
+        except OSError:
+            pass
+
+    # Fallback: choose an available snapshot if refs/main is missing.
+    if snapshots_dir.exists():
+        snapshots = sorted((p for p in snapshots_dir.iterdir() if p.is_dir()), key=lambda p: p.name, reverse=True)
+        if snapshots:
+            return str(snapshots[0])
+
     return None
 
 

@@ -1,0 +1,95 @@
+services:
+  whisperx-api-1:
+    image: ${WHISPERX_IMAGE:-whisper-offline-image:separated-model}
+    pull_policy: always
+    gpus: all
+    expose:
+      - "8000"
+    volumes:
+      - whisperx-model-cache:/app/data/models
+    environment:
+      - HF_HOME=/app/data/models
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
+      - HF_DATASETS_OFFLINE=1
+      - TORCH_HOME=/app/data/models/torch
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - MAX_CONCURRENT_TRANSCRIPTIONS=${MAX_CONCURRENT_TRANSCRIPTIONS:-2}
+      - ENABLE_ALIGNMENT=${ENABLE_ALIGNMENT:-1}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    stop_grace_period: 45s
+    init: true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  whisperx-api-2:
+    image: ${WHISPERX_IMAGE:-whisper-offline-image:separated-model}
+    pull_policy: always
+    gpus: all
+    expose:
+      - "8000"
+    volumes:
+      - whisperx-model-cache:/app/data/models
+    environment:
+      - HF_HOME=/app/data/models
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
+      - HF_DATASETS_OFFLINE=1
+      - TORCH_HOME=/app/data/models/torch
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - MAX_CONCURRENT_TRANSCRIPTIONS=${MAX_CONCURRENT_TRANSCRIPTIONS:-2}
+      - ENABLE_ALIGNMENT=${ENABLE_ALIGNMENT:-1}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    stop_grace_period: 45s
+    init: true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      whisperx-api-1:
+        condition: service_healthy
+      whisperx-api-2:
+        condition: service_healthy
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    stop_grace_period: 30s
+    init: true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  whisperx-model-cache:
