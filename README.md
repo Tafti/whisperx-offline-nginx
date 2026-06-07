@@ -174,7 +174,7 @@ Uncomment the `deploy` section in `docker-compose.yml` and use the GPU‑enabled
 2. **Alignment** (optional) – wav2vec 2.0 model refines word boundaries.
 3. **FastAPI** – Exposes endpoints, handles file uploads, and streams JSON responses.
 
-Model download occurs automatically on first run. If interrupted, the `safe_load_model` helper deletes the corrupted snapshot and retries.
+Model download occurs automatically on first run, and subsequent runs reuse the local Hugging Face cache.
 
 ---
 
@@ -205,7 +205,7 @@ whisperx-local/
 ├── config.py               # Paths, logging, device detection
 ├── utils/
 │   ├── __init__.py
-│   └── model_loader.py     # safe_load_model with retry logic
+│   └── model_loader.py     # Default faster-whisper model loader
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml

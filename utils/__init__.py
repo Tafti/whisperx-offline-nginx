@@ -1,3 +1,3 @@
-from .model_loader import safe_load_model
+from .model_loader import load_model
 
-__all__ = ["safe_load_model"]
+__all__ = ["load_model"]

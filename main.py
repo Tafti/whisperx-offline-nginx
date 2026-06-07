@@ -6,7 +6,7 @@ import whisperx
 
 # Import configuration and utilities
 from config import logger, device, compute_type, MODEL_CACHE_ROOT
-from utils import safe_load_model
+from utils import load_model
 
 # ---------- Global model references ----------
 whisper_model = None
@@ -21,15 +21,14 @@ def load_models():
     global whisper_model, align_model, align_metadata
     # ! change model here
     # TODO: maybe add to /transcribe parameters
-    model_name = "large-v2"
+    model_name = "large-v3"
     logger.info(f"Loading Whisper ASR model: {model_name}")
-    whisper_model = safe_load_model(model_name, device, compute_type)
+    whisper_model = load_model(model_name, device, compute_type)
     logger.info("ASR model loaded successfully")
 
     # Attempt to load alignment model, but continue if it fails
     try:
         logger.info("Loading alignment model...")
-        os.environ["HF_HUB_OFFLINE"] = "1"
         align_model, align_metadata = whisperx.load_align_model(
             language_code="en", 
             device=device,
