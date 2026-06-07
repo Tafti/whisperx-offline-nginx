@@ -8,29 +8,10 @@ ENV PYTHONUNBUFFERED=1 \
     HF_HOME=/app/data/models \
     TRANSFORMERS_CACHE=/app/data/models/transformers \
     HF_HUB_OFFLINE=0 \
-    DEBIAN_FRONTEND=noninteractive \
-    PIP_INDEX_URL=https://package-mirror.liara.ir/repository/pypi/simple
-
-# Remove all existing APT sources (to avoid old mirrors)
-RUN rm -rf /etc/apt/sources.list* && \
-    rm -rf /etc/apt/sources.list.d/*
-
-# Set ArvanCloud mirrors (detect codename automatically)
-RUN set -eux; \
-codename=$(grep "VERSION_CODENAME=" /etc/os-release | cut -d= -f2); \
-echo "deb http://mirror.arvancloud.ir/debian $codename main" > /etc/apt/sources.list; \
-echo "deb http://mirror.arvancloud.ir/debian-security $codename-security main" >> /etc/apt/sources.list; \
-cat /etc/apt/sources.list
-
-# Set Liara mirrors (detect codename automatically)
-# RUN set -eux; \
-#     codename=$(grep "VERSION_CODENAME=" /etc/os-release | cut -d= -f2); \
-#     echo "deb http://linux-mirror.liara.ir/debian $codename main" > /etc/apt/sources.list; \
-#     echo "deb http://linux-mirror.liara.ir/debian-security $codename-security main" >> /etc/apt/sources.list; \
-#     cat /etc/apt/sources.list
+    DEBIAN_FRONTEND=noninteractive 
 
 # Install system dependencies: FFmpeg and other audio libs
-RUN apt-get -o Acquire::Check-Valid-Until=false update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ffmpeg \
     libsndfile1 \
