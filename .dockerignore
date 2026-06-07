@@ -44,8 +44,8 @@ temp/
 .env.*.local
 
 # Model cache - we want to use a volume instead of bundling in image
-data/models/
-!data/models/.gitkeep
+data/
+
 
 # Docker files (avoid recursive include)
 Dockerfile
