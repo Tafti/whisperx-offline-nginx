@@ -6,7 +6,7 @@ FROM python:3.12-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     HF_HOME=/app/data/models \
-    TRANSFORMERS_CACHE=/app/data/models/transformers \
+    HF_HOME=/app/data/models/transformers \
     HF_HUB_OFFLINE=0 \
     DEBIAN_FRONTEND=noninteractive 
 

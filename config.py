@@ -27,7 +27,7 @@ MODEL_CACHE_ROOT.mkdir(parents=True, exist_ok=True)
 
 # Set environment variables for Hugging Face and WhisperX caching
 os.environ["HF_HOME"] = str(MODEL_CACHE_ROOT)
-os.environ["TRANSFORMERS_CACHE"] = str(MODEL_CACHE_ROOT / "transformers")
+os.environ["HF_HOME"] = str(MODEL_CACHE_ROOT / "transformers")
 os.environ["WHISPERX_CACHE"] = str(MODEL_CACHE_ROOT / "whisperx")
 
 # CRITICAL: Force offline mode - prevents any network requests

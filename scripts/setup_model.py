@@ -16,7 +16,7 @@ def setup_model():
     cache_dir.mkdir(parents=True, exist_ok=True)
     
     os.environ["HF_HOME"] = str(cache_dir)
-    os.environ["TRANSFORMERS_CACHE"] = str(cache_dir / "transformers")
+    os.environ["HF_HOME"] = str(cache_dir / "transformers")
     
     model_name = "base"  # or "small", "medium", "large-v2"
     

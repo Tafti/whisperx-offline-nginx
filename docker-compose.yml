@@ -13,7 +13,7 @@ services:
       - ./:/app
     environment:
       - HF_HOME=/app/data/models
-      - TRANSFORMERS_CACHE=/app/data/models/transformers
+      - HF_HOME=/app/data/models/transformers
       - HF_HUB_OFFLINE=0          # Allow download on first run
       # Uncomment for GPU support (requires nvidia-docker)
       # - NVIDIA_VISIBLE_DEVICES=all
