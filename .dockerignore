@@ -45,7 +45,7 @@ temp/
 
 # Model cache - we want to use a volume instead of bundling in image
 data/
-
+media-assets/
 
 # Docker files (avoid recursive include)
 Dockerfile

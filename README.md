@@ -74,9 +74,10 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```bash
 curl -X POST "http://localhost:8000/transcribe" \
   -F "file=@/path/to/audio.mp3" \
-  -F "language=en" \
   -F "beam_size=5"
 ```
+
+If you omit `language`, WhisperX auto-detects it. You can still force a language by passing `-F "language=fr"` (or any supported code).
 
 **Response example** (without alignment):
 ```json
@@ -119,7 +120,7 @@ Open `http://localhost:8000/docs` for Swagger UI.
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `HF_HOME` | Hugging Face cache root | `./data/models` |
-| `TRANSFORMERS_CACHE` | Transformers cache | `./data/models/transformers` |
+| `HF_HOME` | Transformers cache | `./data/models/transformers` |
 | `HF_HUB_OFFLINE` | Force offline mode | `0` (can be set to `1`) |
 | `WHISPERX_CACHE` | WhisperX specific cache | `./data/models/whisperx` |
 
