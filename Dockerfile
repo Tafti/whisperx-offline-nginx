@@ -6,7 +6,7 @@ FROM python:3.12-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     HF_HOME=/app/data/models \
-    HF_HOME=/app/data/models/transformers \
+    HF_HUB_CACHE=/app/data/models/hub \
     HF_HUB_OFFLINE=0 \
     DEBIAN_FRONTEND=noninteractive 
 
@@ -25,7 +25,9 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu124 \
+    --upgrade torch torchaudio
 
 # Copy the rest of the application
 COPY . .
