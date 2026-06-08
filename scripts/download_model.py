@@ -17,7 +17,7 @@ MODEL_CACHE_ROOT.mkdir(parents=True, exist_ok=True)
 
 # Set cache directory
 os.environ["HF_HOME"] = str(MODEL_CACHE_ROOT)
-os.environ["HF_HOME"] = str(MODEL_CACHE_ROOT / "transformers")
+os.environ["HF_HUB_CACHE"] = str(MODEL_CACHE_ROOT / "hub")
 
 # Custom progress callback
 class ProgressCallback:

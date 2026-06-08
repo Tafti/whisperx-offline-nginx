@@ -16,7 +16,7 @@ def setup_model():
     cache_dir.mkdir(parents=True, exist_ok=True)
     
     os.environ["HF_HOME"] = str(cache_dir)
-    os.environ["HF_HOME"] = str(cache_dir / "transformers")
+    os.environ["HF_HUB_CACHE"] = str(cache_dir / "hub")
     
     model_name = "base"  # or "small", "medium", "large-v2"
     
@@ -26,7 +26,9 @@ def setup_model():
     cmd = [
         sys.executable, "-c", f"""
 import os
+import sys
 os.environ['HF_HOME'] = '{cache_dir}'
+os.environ['HF_HUB_CACHE'] = '{cache_dir / "hub"}'
 from huggingface_hub import snapshot_download
 try:
     # Try the official faster-whisper models

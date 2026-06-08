@@ -120,7 +120,7 @@ Open `http://localhost:8000/docs` for Swagger UI.
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `HF_HOME` | Hugging Face cache root | `./data/models` |
-| `HF_HOME` | Transformers cache | `./data/models/transformers` |
+| `HF_HUB_CACHE` | Hugging Face Hub cache | `./data/models/hub` |
 | `HF_HUB_OFFLINE` | Force offline mode | `0` (can be set to `1`) |
 | `WHISPERX_CACHE` | WhisperX specific cache | `./data/models/whisperx` |
 

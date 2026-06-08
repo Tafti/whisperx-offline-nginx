@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 import whisperx
 
 # Import configuration and utilities
-from config import logger, device, compute_type, MODEL_CACHE_ROOT, HARDWARE_INFO
+from config import logger, device, compute_type, MODEL_CACHE_ROOT
 from utils import load_model
 
 # ---------- Global model references ----------
@@ -68,6 +68,7 @@ async def transcribe_audio(
     try:
         # Keep auto-detection enabled unless a language was explicitly provided.
         selected_language = language.strip() if language else None
+        selected_language = selected_language or None
 
         # Transcribe using faster-whisper (no batch_size parameter)
         segments, info = whisper_model.transcribe(
@@ -132,13 +133,9 @@ async def transcribe_audio(
 async def health_check():
     return {
         "status": "ok",
-        "device": device,
-        "compute_type": compute_type,
-        "model_loaded": whisper_model is not None,
-        "cache_dir": str(MODEL_CACHE_ROOT),
-        "hardware": HARDWARE_INFO,
+        "device": device
     }
 
 @app.get("/")
 async def root():
-    return {"message": "WhisperX API is running. Use POST /transcribe to transcribe audio."}
+    return {"message": "Transcription API is running. Use POST /transcribe to transcribe audio."}
