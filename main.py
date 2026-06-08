@@ -1,5 +1,6 @@
 import tempfile
 import os
+from typing import Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 import whisperx
@@ -44,7 +45,7 @@ def load_models():
 @app.post("/transcribe")
 async def transcribe_audio(
     file: UploadFile = File(...),
-    language: str = "en",
+    language: Optional[str] = None,
     beam_size: int = 5,
     best_of: int = 5,
     temperature: float = 0.0
@@ -61,10 +62,13 @@ async def transcribe_audio(
         tmp_path = tmp.name
 
     try:
+        # Keep auto-detection enabled unless a language was explicitly provided.
+        selected_language = language.strip() if language else None
+
         # Transcribe using faster-whisper (no batch_size parameter)
         segments, info = whisper_model.transcribe(
             tmp_path,
-            language=language,
+            language=selected_language,
             task="transcribe",
             beam_size=beam_size,
             best_of=best_of,
