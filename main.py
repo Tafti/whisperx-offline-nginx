@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 import whisperx
 
 # Import configuration and utilities
-from config import logger, device, compute_type, MODEL_CACHE_ROOT
+from config import logger, device, compute_type, MODEL_CACHE_ROOT, HARDWARE_INFO
 from utils import load_model
 
 # ---------- Global model references ----------
@@ -129,8 +129,10 @@ async def health_check():
     return {
         "status": "ok",
         "device": device,
+        "compute_type": compute_type,
         "model_loaded": whisper_model is not None,
-        "cache_dir": str(MODEL_CACHE_ROOT)
+        "cache_dir": str(MODEL_CACHE_ROOT),
+        "hardware": HARDWARE_INFO,
     }
 
 @app.get("/")
