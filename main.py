@@ -54,11 +54,15 @@ async def transcribe_audio(
     if not file.filename.lower().endswith((".wav", ".mp3", ".m4a", ".flac", ".ogg")):
         raise HTTPException(400, "Unsupported file format. Use .wav, .mp3, .m4a, .ogg, or .flac")
 
-    # Save uploaded file temporarily
-    import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
-        content = await file.read()
-        tmp.write(content)
+    # Stream upload to disk in chunks to avoid loading large files into memory.
+    chunk_size = 1024 * 1024  # 1 MB
+    suffix = os.path.splitext(file.filename)[1] or ".mp3"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        while True:
+            chunk = await file.read(chunk_size)
+            if not chunk:
+                break
+            tmp.write(chunk)
         tmp_path = tmp.name
 
     try:
