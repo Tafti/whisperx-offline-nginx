@@ -43,10 +43,9 @@ temp/
 .env.local
 .env.*.local
 
-# Ignore all data files from Docker build context
-data/**
-!data/
-!data/.gitkeep
+# Model cache - we want to use a volume instead of bundling in image
+data/
+
 
 # Docker files (avoid recursive include)
 Dockerfile

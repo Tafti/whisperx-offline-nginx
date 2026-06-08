@@ -11,7 +11,7 @@ import whisperx
 
 # Import configuration and utilities
 from config import logger, device, compute_type, MODEL_CACHE_ROOT
-from utils import safe_load_model
+from utils import load_model
 
 # ---------- Global model references ----------
 whisper_model = None
@@ -253,17 +253,28 @@ def _align_words_blocking(transcript_segments: list, audio_path: str, language_c
 
 @app.on_event("startup")
 def load_models():
-    global whisper_model
+    global whisper_model, align_model, align_metadata
+    # ! change model here
+    # TODO: maybe add to /transcribe parameters
     model_name = "large-v3"
     logger.info(f"Loading Whisper ASR model: {model_name}")
-    whisper_model = safe_load_model(model_name, device, compute_type)
+    whisper_model = load_model(model_name, device, compute_type)
     logger.info("ASR model loaded successfully")
-    if ENABLE_ALIGNMENT:
-        _prepare_nltk_resources()
-        _patch_alignment_sentence_splitter()
-        logger.info("Alignment path enabled (local wav2vec + offline-safe splitter)")
-    else:
-        logger.info("Alignment path disabled via ENABLE_ALIGNMENT=0")
+
+    # Attempt to load alignment model, but continue if it fails
+    try:
+        logger.info("Loading alignment model...")
+        align_model, align_metadata = whisperx.load_align_model(
+            language_code="en", 
+            device=device,
+            model_cache_only=True 
+        )
+        logger.info("Alignment model loaded successfully")
+    except Exception as e:
+        logger.warning(f"Alignment model not available: {e}")
+        logger.warning("Continuing without word-level alignment")
+        align_model = None
+        align_metadata = None
 
 @app.post("/transcribe")
 async def transcribe_audio(

@@ -2,14 +2,12 @@ FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04 AS builder
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    DEBIAN_FRONTEND=noninteractive \
-    PIP_NO_CACHE_DIR=1
+    HF_HOME=/app/data/models \
+    TRANSFORMERS_CACHE=/app/data/models/transformers \
+    HF_HUB_OFFLINE=0 \
+    DEBIAN_FRONTEND=noninteractive 
 
-# Remove stale NVIDIA apt sources
-RUN rm -f /etc/apt/sources.list.d/cuda*.list && \
-    rm -f /etc/apt/sources.list.d/nvidia*.list || true
-
-# System dependencies
+# Install system dependencies: FFmpeg and other audio libs
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         python3 python3-pip python3-venv \
@@ -63,4 +61,8 @@ RUN mkdir -p /app/data/models
 
 EXPOSE 8000
 
-CMD ["python3", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=70s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"
+
+# Command to run the server
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
