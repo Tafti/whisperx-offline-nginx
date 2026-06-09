@@ -1,5 +1,7 @@
 import tempfile
 import os
+from typing import Optional
+import threading
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 import whisperx
@@ -10,15 +12,15 @@ from utils import load_model
 
 # ---------- Global model references ----------
 whisper_model = None
-align_model = None
-align_metadata = None
+alignment_model_cache = {}
+alignment_cache_lock = threading.Lock()
 
 # ---------- FastAPI app ----------
 app = FastAPI(title="WhisperX API", description="Local transcription server with retry logic")
 
 @app.on_event("startup")
 def load_models():
-    global whisper_model, align_model, align_metadata
+    global whisper_model
     # ! change model here
     # TODO: maybe add to /transcribe parameters
     model_name = "large-v3"
@@ -26,20 +28,28 @@ def load_models():
     whisper_model = load_model(model_name, device, compute_type)
     logger.info("ASR model loaded successfully")
 
-    # Attempt to load alignment model, but continue if it fails
+
+def get_alignment_model(language_code: str):
+    """Get cached alignment model for language or load it once."""
+    with alignment_cache_lock:
+        cached = alignment_model_cache.get(language_code)
+        if cached is not None:
+            return cached
+
     try:
-        logger.info("Loading alignment model...")
+        logger.info(f"Loading alignment model for language: {language_code}")
         align_model, align_metadata = whisperx.load_align_model(
-            language_code="en", 
+            language_code=language_code,
             device=device,
-            model_cache_only=True 
+            model_cache_only=False,
         )
-        logger.info("Alignment model loaded successfully")
+        with alignment_cache_lock:
+            alignment_model_cache[language_code] = (align_model, align_metadata)
+        logger.info(f"Alignment model loaded and cached: {language_code}")
+        return align_model, align_metadata
     except Exception as e:
-        logger.warning(f"Alignment model not available: {e}")
-        logger.warning("Continuing without word-level alignment")
-        align_model = None
-        align_metadata = None
+        logger.warning(f"Alignment model unavailable for '{language_code}': {e}")
+        return None, None
 
 @app.post("/transcribe")
 async def transcribe_audio(
@@ -95,9 +105,15 @@ async def transcribe_audio(
             "segments": transcript_segments
         }
         
-        # If alignment model is available, add word-level timestamps
-        if align_model is not None:
+        # Load alignment model per detected language and cache it for reuse.
+        detected_language = (info.language or "").strip().lower()
+        if detected_language:
             try:
+                align_model, align_metadata = get_alignment_model(detected_language)
+
+                if align_model is None:
+                    return JSONResponse(content=result)
+
                 # Convert to format expected by whisperx.align
                 aligned = whisperx.align(
                     transcript_segments,
